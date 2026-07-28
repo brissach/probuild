@@ -2,6 +2,8 @@
 
 **Text-to-structure generation for Minecraft.**
 
+![3D block generation](docs/images/3d-generation.png)
+
 ![Inference pipeline](docs/images/pipeline-architecture.png)
 
 Probuild lets players describe a building in plain language and have it appear in the world. A Paper plugin handles commands and block placement; a Python backend runs the ML model and returns a validated 3D structure. The two halves talk over a signed HTTP API so only your server can call generation.
@@ -25,8 +27,6 @@ Player: /probuild create a small stone tower with windows
               Structure placed
               at player's feet
 ```
-
-![3D block generation](docs/images/3d-generation.png)
 
 ## What you can do
 
