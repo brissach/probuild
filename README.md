@@ -2,6 +2,8 @@
 
 **Text-to-structure generation for Minecraft.**
 
+![Inference pipeline](docs/images/pipeline-architecture.png)
+
 Probuild lets players describe a building in plain language and have it appear in the world. A Paper plugin handles commands and block placement; a Python backend runs the ML model and returns a validated 3D structure. The two halves talk over a signed HTTP API so only your server can call generation.
 
 ```
@@ -23,6 +25,8 @@ Player: /probuild create a small stone tower with windows
               Structure placed
               at player's feet
 ```
+
+![3D block generation](docs/images/3d-generation.png)
 
 ## What you can do
 
@@ -174,8 +178,6 @@ prompt ──► TextEncoder ──► conditioning vector
 | **Voxel autoencoder** | Decodes latents into a 3D grid of block logits; argmax → block IDs |
 
 The default model id is `probuild-base@0.1.0`. Aliases `latest`, `stable`, and `experimental` resolve through the model registry.
-
-![Inference pipeline](docs/images/pipeline-architecture.png)
 
 ### Project layout
 
@@ -583,3 +585,20 @@ Brings up the backend and Redis. Mount trained weights into `backend/artifacts/`
 | Paper | 1.21+ |
 | WorldEdit | optional |
 | Redis | optional (caching) |
+
+---
+
+## License
+
+Probuild is licensed under the [PolyForm Noncommercial License 1.0.0](LICENSE).
+
+**You can:**
+- Run Probuild on your own Minecraft server
+- Study, modify, and contribute to the code
+- Share forks and changes for noncommercial use (with attribution and the same license)
+
+**You cannot without permission:**
+- Sell Probuild or derivatives (paid plugins, hosted generation services, plug-and-play server packs, etc.)
+- Use it in any other commercial product or service
+
+Schools, charities, and personal hobby projects are fine. If you want to use Probuild commercially, open an issue on [GitHub](https://github.com/brissach/probuild/issues).

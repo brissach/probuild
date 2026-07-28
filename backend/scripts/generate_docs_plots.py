@@ -33,6 +33,148 @@ BLOCKS = [
 ]
 
 
+BLOCK_COLORS: dict[str, str] = {
+  "stone": "#7d7d7d",
+  "cobblestone": "#6b6b6b",
+  "stone_bricks": "#757575",
+  "oak_planks": "#b8945f",
+  "oak_log": "#5c4033",
+  "oak_leaves": "#3b7a2a",
+  "glass": "#9fd5e8",
+  "bricks": "#966766",
+  "dirt": "#8b6914",
+  "grass_block": "#5c7f2f",
+  "sand": "#dbd3a0",
+  "spruce_planks": "#674e2e",
+  "spruce_log": "#3a2818",
+  "water": "#3366cc",
+  "torch": "#ffcc33",
+  "pending": "#4ecdc4",
+}
+
+
+def build_tower_blocks() -> list[tuple[int, int, int, str]]:
+  """Procedural stone tower used for the 3D generation demo."""
+  blocks: list[tuple[int, int, int, str]] = []
+  ox, oz = 4, 4
+
+  for x in range(ox - 1, ox + 8):
+    for z in range(oz - 1, oz + 8):
+      blocks.append((x, 0, z, "cobblestone"))
+
+  for y in range(1, 11):
+    for x in range(ox, ox + 6):
+      for z in range(oz, oz + 6):
+        edge = x in (ox, ox + 5) or z in (oz, oz + 5)
+        if not edge:
+          continue
+        if y in (4, 8) and x in (ox + 2, ox + 3) and z == oz:
+          blocks.append((x, y, z, "glass"))
+        elif y in (4, 8) and z in (oz + 2, oz + 3) and x == ox + 5:
+          blocks.append((x, y, z, "glass"))
+        else:
+          blocks.append((x, y, z, "stone_bricks"))
+
+  for y in range(1, 4):
+    for x in range(ox + 1, ox + 5):
+      for z in range(oz + 1, oz + 5):
+        blocks.append((x, y, z, "stone"))
+
+  for x in range(ox + 1, ox + 5):
+    for z in range(oz + 1, oz + 5):
+      blocks.append((x, 10, z, "stone_bricks"))
+
+  for x, z in ((ox, oz), (ox + 5, oz), (ox, oz + 5), (ox + 5, oz + 5)):
+    for y in range(11, 14):
+      blocks.append((x, y, z, "oak_log"))
+
+  for x in range(ox, ox + 6):
+    for z in range(oz, oz + 6):
+      if (x, z) in {(ox, oz), (ox + 5, oz), (ox, oz + 5), (ox + 5, oz + 5)}:
+        blocks.append((x, 14, z, "oak_log"))
+      else:
+        blocks.append((x, 14, z, "oak_planks"))
+
+  blocks.append((ox + 3, 1, oz + 3, "torch"))
+  return blocks
+
+
+def _render_voxel_stage(
+  ax: plt.Axes,
+  *,
+  placed: list[tuple[int, int, int, str]],
+  pending: list[tuple[int, int, int, str]],
+  bounds: tuple[int, int, int, int, int, int],
+) -> None:
+  x0, x1, y1, z0, z1 = bounds
+  size_x = x1 - x0 + 1
+  size_y = y1 + 1
+  size_z = z1 - z0 + 1
+  filled = np.zeros((size_x, size_y, size_z), dtype=bool)
+  colors = np.empty(filled.shape, dtype=object)
+
+  for x in range(x0, x1 + 1):
+    for z in range(z0, z1 + 1):
+      lx, lz = x - x0, z - z0
+      filled[lx, 0, lz] = True
+      colors[lx, 0, lz] = BLOCK_COLORS["grass_block"] if (x + z) % 2 == 0 else BLOCK_COLORS["dirt"]
+
+  for x, y, z, block_id in pending:
+    lx, ly, lz = x - x0, y, z - z0
+    if 0 <= lx < size_x and 0 <= ly < size_y and 0 <= lz < size_z:
+      filled[lx, ly, lz] = True
+      colors[lx, ly, lz] = BLOCK_COLORS["pending"]
+
+  for x, y, z, block_id in placed:
+    lx, ly, lz = x - x0, y, z - z0
+    if 0 <= lx < size_x and 0 <= ly < size_y and 0 <= lz < size_z:
+      filled[lx, ly, lz] = True
+      colors[lx, ly, lz] = BLOCK_COLORS.get(block_id, BLOCK_COLORS["stone"])
+
+  ax.voxels(filled, facecolors=colors, edgecolor="#243040", linewidth=0.25, shade=True)
+  ax.set_box_aspect((1, 1.15, 1))
+  ax.view_init(elev=22, azim=-135)
+  ax.set_axis_off()
+
+
+def plot_3d_generation() -> None:
+  all_blocks = build_tower_blocks()
+  ordered = sorted(all_blocks, key=lambda b: (b[1], b[0] + b[2], b[0], b[2]))
+  bounds = (2, 13, 15, 2, 13)
+  stages = [
+    ("Origin (0, 0, 0)", 0, 0),
+    ("Generating (~40%)", int(len(ordered) * 0.4), int(len(ordered) * 0.62)),
+    ("Generating (~75%)", int(len(ordered) * 0.75), len(ordered)),
+    ("Placed in world", len(ordered), len(ordered)),
+  ]
+
+  fig = plt.figure(figsize=(14, 5.2), facecolor=PALETTE["bg"])
+  for idx, (title, placed_count, visible_count) in enumerate(stages, start=1):
+    ax = fig.add_subplot(1, 4, idx, projection="3d", facecolor=PALETTE["bg"])
+    placed = ordered[:placed_count]
+    pending = ordered[placed_count:visible_count]
+    _render_voxel_stage(ax, placed=placed, pending=pending, bounds=bounds)
+    ax.set_title(title, color=PALETTE["text"], fontsize=10, pad=10)
+
+  fig.suptitle(
+    '/probuild create a small stone tower with windows',
+    color=PALETTE["accent"],
+    fontsize=12,
+    y=0.97,
+  )
+  fig.text(
+    0.5,
+    0.03,
+    "Blocks stream from the API as JSON, validate, then place bottom-up at the player origin",
+    ha="center",
+    color=PALETTE["muted"],
+    fontsize=9,
+  )
+  fig.subplots_adjust(wspace=0.05, top=0.84, bottom=0.10, left=0.02, right=0.98)
+  fig.savefig(OUTPUT / "3d-generation.png", dpi=180, facecolor=PALETTE["bg"])
+  plt.close(fig)
+
+
 def style_axes(ax: plt.Axes) -> None:
   ax.set_facecolor(PALETTE["panel"])
   ax.tick_params(colors=PALETTE["muted"], labelsize=8)
@@ -291,6 +433,7 @@ def main() -> None:
   plot_token_sampling()
   plot_pipeline_architecture()
   plot_voxel_slices()
+  plot_3d_generation()
   print(f"Wrote plots to {OUTPUT}")
 
 
