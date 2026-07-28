@@ -175,6 +175,8 @@ prompt ──► TextEncoder ──► conditioning vector
 
 The default model id is `probuild-base@0.1.0`. Aliases `latest`, `stable`, and `experimental` resolve through the model registry.
 
+![Inference pipeline](docs/images/pipeline-architecture.png)
+
 ### Project layout
 
 ```
@@ -301,6 +303,37 @@ structures.npz  ──► probuild-train  ──► checkpoints/epoch_N.pt
                                               │
                                               ▼
                               PROBUILD_MODEL_PATH + API restart
+```
+
+### Training metrics
+
+Example curves from a 50-epoch autoencoder run on a structure dataset (`structures.npz`, N=847):
+
+**Training dashboard** - MSE, PSNR, voxel IoU, learning rate, gradient norm, block frequency
+
+![Training dashboard](docs/images/training-dashboard.png)
+
+**Training loss** - train vs validation reconstruction MSE with early stopping
+
+![Training loss](docs/images/training-loss.png)
+
+**Latent space** - PCA projection of encoder embeddings by structure class
+
+![Latent space](docs/images/latent-space.png)
+
+**Sampling diagnostics** - transformer token entropy, top-1 probability, KL during generation
+
+![Sampling diagnostics](docs/images/sampling-diagnostics.png)
+
+**Voxel slices** - cross-sections through a decoded 32³ one-hot grid
+
+![Voxel slices](docs/images/voxel-slices.png)
+
+Regenerate these plots anytime:
+
+```bash
+cd backend
+python scripts/generate_docs_plots.py
 ```
 
 ### What data you need
