@@ -1,0 +1,13 @@
+node_modules/
+__pycache__/
+*.py[cod]
+.venv/
+.env
+*.pt
+*.pth
+backend/artifacts/
+.gradle/
+build/
+.idea/
+*.iml
+.DS_Store
