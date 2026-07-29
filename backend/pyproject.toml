@@ -1,0 +1,64 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "probuild"
+version = "0.1.0"
+description = "Probuild ML backend for Minecraft structure generation"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115.0",
+  "uvicorn[standard]>=0.32.0",
+  "pydantic>=2.9.0",
+  "pydantic-settings>=2.6.0",
+  "httpx>=0.27.0",
+  "redis>=5.2.0",
+  "structlog>=24.4.0",
+  "prometheus-client>=0.21.0",
+  "torch>=2.5.0",
+  "numpy>=2.1.0",
+  "tomli>=2.0.0; python_version < '3.11'",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3.0",
+  "pytest-asyncio>=0.24.0",
+  "ruff>=0.8.0",
+  "mypy>=1.13.0",
+  "types-redis>=4.6.0",
+]
+
+[project.scripts]
+probuild-train = "probuild.scripts.train:main"
+probuild-evaluate = "probuild.scripts.evaluate:main"
+probuild-export = "probuild.scripts.export_model:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/probuild"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["B008"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+packages = ["probuild"]
+mypy_path = "src"
+warn_return_any = false
+
+[[tool.mypy.overrides]]
+module = ["torch.*", "redis.*", "probuild.ml.*", "probuild.api.*", "probuild.infrastructure.observability.logging"]
+ignore_errors = true
