@@ -1,0 +1,62 @@
+plugins {
+  id 'java'
+  id 'com.diffplug.spotless' version '6.25.0'
+}
+
+group = 'io.brissach.probuild'
+version = '0.1.0'
+
+java {
+  toolchain {
+    languageVersion = JavaLanguageVersion.of(21)
+  }
+}
+
+repositories {
+  mavenCentral()
+  maven {
+    name = 'papermc'
+    url = 'https://repo.papermc.io/repository/maven-public/'
+  }
+  maven {
+    name = 'enginehub'
+    url = 'https://maven.enginehub.org/repo/'
+  }
+}
+
+dependencies {
+  compileOnly 'io.papermc.paper:paper-api:1.21.1-R0.1-SNAPSHOT'
+  compileOnly 'com.sk89q.worldedit:worldedit-bukkit:7.3.19'
+  implementation 'com.google.code.gson:gson:2.11.0'
+  testImplementation 'io.papermc.paper:paper-api:1.21.1-R0.1-SNAPSHOT'
+  testImplementation platform('org.junit:junit-bom:5.11.3')
+  testImplementation 'org.junit.jupiter:junit-jupiter'
+  testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.withType(JavaCompile).configureEach {
+  options.encoding = 'UTF-8'
+}
+
+tasks.test {
+  useJUnitPlatform()
+}
+
+spotless {
+  java {
+    indentWithSpaces(2)
+    trimTrailingWhitespace()
+    endWithNewline()
+  }
+}
+
+processResources {
+  def props = [version: version]
+  filesMatching('plugin.yml') {
+    expand props
+  }
+}
+
+jar {
+  archiveBaseName.set('Probuild')
+}

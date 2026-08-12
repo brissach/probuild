@@ -1,0 +1,15 @@
+backend:
+  url: "http://localhost:8000"
+  api-key: ""
+  signing-secret: ""
+  timeout-ms: 30000
+
+generation:
+  max-width: 32
+  max-height: 32
+  max-depth: 32
+  max-concurrent-generations: 2
+
+placement:
+  max-blocks: 50000
+  backend: auto

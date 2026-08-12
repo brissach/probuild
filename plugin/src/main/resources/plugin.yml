@@ -1,0 +1,27 @@
+name: Probuild
+version: ${version}
+main: io.brissach.probuild.ProbuildPlugin
+api-version: '1.21'
+authors: [Brissach]
+description: AI-powered structure generation for Minecraft
+softdepend: [WorldEdit]
+
+commands:
+  probuild:
+    description: Generate structures with Probuild
+    usage: /probuild <create|reload|status> ...
+    permission: probuild.create
+
+permissions:
+  probuild.create:
+    description: Generate structures
+    default: op
+  probuild.reload:
+    description: Reload Probuild configuration
+    default: op
+  probuild.admin:
+    description: Probuild administrative access
+    default: op
+    children:
+      probuild.create: true
+      probuild.reload: true
