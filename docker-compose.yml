@@ -1,0 +1,25 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      PROBUILD_ENV: production
+      PROBUILD_API_HOST: 0.0.0.0
+      PROBUILD_API_PORT: 8000
+      PROBUILD_API_KEY: ${PROBUILD_API_KEY:-change-me}
+      PROBUILD_SIGNING_SECRET: ${PROBUILD_SIGNING_SECRET:-change-me-signing}
+      PROBUILD_REDIS_URL: redis://redis:6379/0
+      PROBUILD_MODEL_PATH: /app/artifacts/models/probuild-base-0.1.0.pt
+      PROBUILD_LOG_LEVEL: INFO
+    depends_on:
+      - redis
+    volumes:
+      - ./backend/artifacts:/app/artifacts:ro
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
